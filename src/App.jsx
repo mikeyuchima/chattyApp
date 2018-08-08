@@ -8,18 +8,7 @@ class App extends Component {
 
     this.state = {
       currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
-      messages: [
-        {
-          id: 1,
-          username: "Bob",
-          content: "Has anyone seen my marbles?",
-        },
-        {
-          id: 2,
-          username: "Anonymous",
-          content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
-        }
-      ]
+      messages: []
     }
     this.addMessage = this.addMessage.bind(this);
   }
@@ -35,18 +24,31 @@ class App extends Component {
       // Calling setState will trigger a call to render() in App and all child components.
       this.setState({messages: messages})
     }, 3000);
+
+      // Setup the WebSocket client
+      this.socket = new WebSocket("ws://localhost:3001/websocket");
+
+      // Handle when the socket opens (i.e. is connected to the server)
+      this.socket.addEventListener("open", e => {
+        console.log("Connected to websocket server");
+      });
+  
+      // Handle messages using `this.receiveMessage`
+      // this.socket.addEventListener("message", this.receiveMessage);
   }
 
   addMessage(message) {
     // console.log("tasks", oldTaskNames, message);
     const newMessage = [
       {
-        id: 23,
-        username: 'name',
+        id: 0,
+        username: this.state.currentUser.name,
         content: message
       }
     ];
     const messages = this.state.messages.concat(newMessage)
+    this.socket.send(JSON.stringify(messages));
+
     this.setState({
       messages: messages  
     });
