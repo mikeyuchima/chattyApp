@@ -45,6 +45,7 @@
     "webpack-dev-server": "2.3.0"
   },
   "dependencies": {
+    "jquery": "^3.3.1",
     "react": "15.4.2",
     "react-dom": "15.4.2",
     "uuid": "^3.3.2"

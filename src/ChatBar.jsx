@@ -19,7 +19,7 @@ class ChatBar extends Component {
     if (evt.key === "Enter") {
       evt.preventDefault();
       const messageInput = {
-        type: "postMessage",
+        type: "postNotification",
         username: evt.target.value,
         message: `${this.props.currentUser} have changed their name to ${
           evt.target.value

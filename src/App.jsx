@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import ChatBar from "./ChatBar.jsx";
 import MessageList from "./MessageList.jsx";
+const $ = require("jquery");
 
 class App extends Component {
   constructor() {
@@ -8,26 +9,13 @@ class App extends Component {
 
     this.state = {
       currentUser: { name: "anonymous" }, // optional. if currentUser is not defined, it means the user is Anonymous
-      messages: []
+      messages: [],
+      clientSize: 0
     };
   }
 
   componentDidMount() {
     console.log("componentDidMount <App />");
-    setTimeout(() => {
-      console.log("Simulating incoming message");
-      // Add a new message to the list of messages in the data store
-      const newMessage = {
-        id: 3,
-        username: "Michelle",
-        content: "Hello there!"
-      };
-      const messages = this.state.messages.concat(newMessage);
-      // Update the state of the app component.
-      // Calling setState will trigger a call to render() in App and all child components.
-      this.setState({ messages: messages });
-    }, 3000);
-
     // Setup the WebSocket client
     this.socket = new WebSocket("ws://localhost:3001/websocket");
 
@@ -39,17 +27,22 @@ class App extends Component {
     // Handle messages using `this.receiveMessage`
     // this.socket.addEventListener("message", this.receiveMessage);
     this.socket.addEventListener("message", evt => {
+      debugger;
       const pkg = JSON.parse(evt.data);
-      console.log(pkg);
+      console.log(evt);
       switch (pkg.type) {
         case "incomingMessage":
+          console.log("/incomingMessage");
           const messages = [...this.state.messages, pkg.data];
-          console.log(messages);
           this.setState({ messages });
           break;
         case "incomingNotification":
-          $(".message system").text("notificatioooon");
+          console.log("/incomingNotification");
+          this.setState({ messages: [...this.state.messages, pkg] });
           break;
+        case "incomingClientSize":
+          console.log("/incomingClientSize");
+          this.setState({ clientSize: pkg.size });
         default:
           throw new Error("Unknown event type " + pkg.type);
       }
@@ -72,6 +65,7 @@ class App extends Component {
           <a href="/" className="navbar-brand">
             Chatty
           </a>
+          <p>Current Users: {this.state.clientSize}</p>
         </nav>
         <MessageList messages={this.state.messages} />
         <ChatBar

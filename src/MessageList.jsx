@@ -10,7 +10,6 @@ const MessageList = props => (
         content={message.content}
       />
     ))}
-    <div className="message system" />
   </main>
 );
 export default MessageList;
