@@ -3,35 +3,44 @@ const uuid = require('uuid')
 // server.js
 
 const express = require('express');
-const SocketServer = require('ws').Server;
+const WebSocket = require('ws');
 
 // Set the port to 3001
 const PORT = 3001;
 
 // Create a new express server
 const server = express()
-   // Make the express server serve static assets (html, javascript, css) from the /public folder
+  // Make the express server serve static assets (html, javascript, css) from the /public folder
   .use(express.static('public'))
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 // Create the WebSockets server
-const wss = new SocketServer({ server, path: "/websocket" });
+const wss = new WebSocket.Server({
+  server,
+  path: "/websocket"
+});
 
-const createMessage = content = ({
-  type: "message",
+const createMessage = msg => ({
+  type: "incomingMessage",
   data: {
     id: uuid(),
-    content
+    username: msg.username,
+    content: msg.message
   }
 });
 
-// SocketServer.broadcast = (data, ws) => {
-//   SocketServer.clients.forEach(client => {
-//     if (client !== ws && client.readyState === WebSocket.OPEN) {
-//       client.send(data);
-//     }
-//   });
-// };
+const createNotification = msg => ({
+  type: "incomingNotification",
+  content: msg.message,
+});
+
+wss.broadcast = (data, ws) => {
+  wss.clients.forEach(client => {
+    if (client !== ws && client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
 
 // Set up a callback that will run when a client connects to the server
 // When a client connects they are assigned a socket, represented by
@@ -40,28 +49,29 @@ wss.on('connection', (ws) => {
   console.log('Client connected');
 
   ws.on('message', data => {
-    console.log("Message Received", data);
-    const msg = JSON.parse(data);
+      console.log("Message Received", data);
+      const msg = JSON.parse(data);
 
-    console.log('parsed', msg)
+      console.log('parsed', msg)
 
-    switch (msg.type) {
-      case "message":
-        const message = createMessage(msg.text);
+      switch (msg.type) {
+        case "postMessage":
+          const message = createMessage(msg);
+          console.log('innnnfiltrated', message)
 
-        socketServer.broadcast(JSON.stringify(message));
-        break;
-      case "setBackground":
-        backgroundColor = msg.backgroundColor;
-        const data = JSON.stringify(backgroundMessage());
+          wss.broadcast(JSON.stringify(message));
+          break;
+        case "postNotification":
+          const notification = createNotification(msg)
+          wss.broadcast(JSON.stringify(notification));
+          break;
+        default:
+          throw new Error("Unknown event type " + msg.type);
 
-        socketServer.broadcast(data, ws);
-        break;
-      default:
-    }
+      }
 
-  }),
+    }),
 
-  // Set up a callback for when a client closes the socket. This usually means they closed their browser.
-  ws.on('close', () => console.log('Client disconnected'));
+    // Set up a callback for when a client closes the socket. This usually means they closed their browser.
+    ws.on('close', () => console.log('Client disconnected'));
 });
