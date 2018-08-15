@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 
 class ChatBar extends Component {
+  //post message to websocket and state
   onSubmit = evt => {
-    if (evt.key === "Enter") {
+    if (evt.key === "Enter" && evt.target.value) {
       evt.preventDefault();
-      console.log("something", this);
       const messageInput = {
         type: "postMessage",
         username: this.props.currentUser,
@@ -14,9 +14,13 @@ class ChatBar extends Component {
       evt.target.value = "";
     }
   };
-
+  //post username change to websocket and state
   onChange = evt => {
-    if (evt.key === "Enter") {
+    if (
+      evt.key === "Enter" &&
+      evt.target.value &&
+      evt.target.value !== this.props.currentUser
+    ) {
       evt.preventDefault();
       const messageInput = {
         type: "postNotification",
@@ -28,6 +32,7 @@ class ChatBar extends Component {
       this.props.changeUser(messageInput);
     }
   };
+  //templating
   render() {
     return (
       <footer className="chatbar">

@@ -8,6 +8,7 @@ const MessageList = props => (
         key={message.id}
         userName={message.username}
         content={message.content}
+        color={message.color}
       />
     ))}
   </main>

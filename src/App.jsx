@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import ChatBar from "./ChatBar.jsx";
 import MessageList from "./MessageList.jsx";
-const $ = require("jquery");
 
 class App extends Component {
   constructor() {
@@ -20,44 +19,44 @@ class App extends Component {
     this.socket = new WebSocket("ws://localhost:3001/websocket");
 
     // Handle when the socket opens (i.e. is connected to the server)
-    this.socket.addEventListener("open", e => {
-      console.log("Connected to websocket server", e);
+    this.socket.addEventListener("open", evt => {
+      console.log("Connected to websocket server");
     });
 
     // Handle messages using `this.receiveMessage`
-    // this.socket.addEventListener("message", this.receiveMessage);
     this.socket.addEventListener("message", evt => {
-      debugger;
       const pkg = JSON.parse(evt.data);
-      console.log(evt);
+
+      //switch statement to select type of message
       switch (pkg.type) {
         case "incomingMessage":
-          console.log("/incomingMessage");
+          console.log("Render <MessageList /incomingMessage>");
           const messages = [...this.state.messages, pkg.data];
           this.setState({ messages });
           break;
         case "incomingNotification":
-          console.log("/incomingNotification");
+          console.log("Render <MessageList /incomingNotification>");
           this.setState({ messages: [...this.state.messages, pkg] });
           break;
         case "incomingClientSize":
-          console.log("/incomingClientSize");
+          console.log("Render <Nav /incomingClientSize>");
           this.setState({ clientSize: pkg.size });
+          break;
         default:
           throw new Error("Unknown event type " + pkg.type);
       }
     });
   }
-
+  //change user function
   changeUser = message => {
     this.setState({ currentUser: { name: message.username } });
     this.socket.send(JSON.stringify(message));
   };
-
+  //send message to websocket
   sendMessage = message => {
     this.socket.send(JSON.stringify(message));
   };
-
+  //templating
   render() {
     return (
       <div>

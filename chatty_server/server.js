@@ -1,7 +1,7 @@
 // unique id
 const uuid = require('uuid')
-// server.js
 
+// server.js
 const express = require('express');
 const WebSocket = require('ws');
 
@@ -22,15 +22,16 @@ const wss = new WebSocket.Server({
 
 const clientSize = size => ({
   type: "incomingClientSize",
-  size
+  size,
 });
 
-const createMessage = msg => ({
+const createMessage = (msg, color) => ({
   type: "incomingMessage",
   data: {
     id: uuid(),
     username: msg.username,
-    content: msg.message
+    content: msg.message,
+    color,
   }
 });
 
@@ -52,9 +53,12 @@ wss.broadcast = (data, ws) => {
 // the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
-  console.log('sizee', wss.clients.size)
+  console.log('client', wss.clients)
+
   const userSize = clientSize(wss.clients.size)
   wss.broadcast(JSON.stringify(userSize));
+
+  const randomColor = "#" + (Math.random().toString(16) + "000000").slice(2, 8);
 
   ws.on('message', data => {
       console.log("Message Received", data);
@@ -64,7 +68,7 @@ wss.on('connection', (ws) => {
 
       switch (msg.type) {
         case "postMessage":
-          const message = createMessage(msg);
+          const message = createMessage(msg, randomColor);
           console.log('innnnfiltrated', message)
 
           wss.broadcast(JSON.stringify(message));
@@ -75,11 +79,8 @@ wss.on('connection', (ws) => {
           break;
         default:
           throw new Error("Unknown event type " + msg.type);
-
       }
-
     }),
-
     // Set up a callback for when a client closes the socket. This usually means they closed their browser.
     ws.on('close', (ws) => {
       console.log('Client disconnected')

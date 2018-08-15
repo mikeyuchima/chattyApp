@@ -1,19 +1,30 @@
 import React, { Component } from "react";
 
 class Message extends Component {
-  constructor(props) {
-    super();
-    this.state = { props };
-  }
   render() {
-    let style = { fontStyle: "normal" };
-    if (!this.props.userName) style = { fontStyle: "italic" };
+    //to change url to image if applicable
+    let content = "";
+    if (this.props.content.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+      content = <img src={this.props.content} style={{ maxHeight: "60vh" }} />;
+    } else {
+      content = this.props.content;
+    }
 
+    //font colour
+    let color = { color: `${this.props.color}` };
+
+    //font style for system message
+    let font = { fontStyle: "normal" };
+    if (!this.props.userName) font = { fontStyle: "italic" };
+
+    //templating
     return (
       <div className="message">
-        <span className="message-username">{this.props.userName}</span>
-        <span className="message-content" style={style}>
-          {this.props.content}
+        <span className="message-username" style={color}>
+          {this.props.userName}
+        </span>
+        <span className="message-content" style={font}>
+          {content}
         </span>
         <div className="messageSystem" />
       </div>
